@@ -29,42 +29,68 @@ Retrieval: Similarity search for relevant context chunks.
 Generation: LLM synthesis with filename and page number citations.
 
 ## 💡 Technical Decisions
-FAISS: Chosen for local persistence and high-speed retrieval without cloud overhead.
+Chunking Strategy: 
 
-Overlap: A 200-character overlap was implemented to prevent loss of context at chunk boundaries.
+I chose Recursive Character Splitting with a chunk size of 1000 and a 200-character overlap.
+
+Why: This strategy is superior to simple splitting because it attempts to keep paragraphs and sentences together, preserving the semantic meaning. The overlap ensures that context isn't lost when a topic is split across two chunks.
+
+Embedding Model:
+
+Google Generative AI Embeddings (models/embedding-001).
+
+Why: It offers high-dimensional accuracy and integrates seamlessly with the Gemini LLM for consistent performance across the pipeline.
+
+Vector Database: 
+
+FAISS (Facebook AI Similarity Search).
+
+Why: FAISS was selected because it is lightweight, runs locally without a cloud subscription, and allows for disk persistence, meaning the documents only need to be indexed once.
 
 ## 🚀 Setup & Execution
+Clone the Repository:
+
+Bash
+
+git clone https://github.com/Pranaynellutla/RAG-Document-QA-Bot.git
+cd RAG-Document-QA-Bot
+
 Install Requirements:
 
 Bash
+
 pip install -r requirements.txt
 
+Environment Variables:
 
-API Configuration:
-Add your GOOGLE_API_KEY to a .env file.
+Create a .env file in the root directory:
 
-
-Run Pipeline:
+Plaintext
+GOOGLE_API_KEY=your_gemini_api_key_here
+Run Ingestion (Indexing):
 
 Bash
 python ingest.py
+Run the Bot:
 
+Bash
 streamlit run app.py
 
 ## ❓ Example Queries
-"What is the impact of Bitcoin on financial systems?"
+"What is the impact of Bitcoin on financial systems?" (Expected theme: Decentralization and gold-like status).
 
-"How does science influence law?"
+"How does science influence law?" (Expected theme: Forensic evidence and legislative updates).
 
-"Summarize the Teesside University course details."
+"Summarize the Teesside University course details." (Expected theme: Master's program modules and ROI).
 
-"What are the AI internship requirements?"
+"What are the AI internship requirements?" (Expected theme: RAG pipeline components and delivery dates).
 
-"Is there information about Mars in these documents?" (Testing out-of-context handling)
+"Is there information about Mars in these documents?" (Expected theme: The bot should state it cannot find this information).
+
 
 ## ⚠️ Known Limitations
-Requires a local .env file for API keys.
+Data Format: Currently only supports PDF files; TXT or DOCX files are not processed in the current version.
 
-Supports only PDF ingestion in the current version.
+Static Index: If new files are added to the /data folder, the ingest.py script must be manually re-run to update the vector store.
 
-Requires re-indexing if files in the /data folder are modified.
+API Dependency: Requires an active internet connection and a valid Google API key to function.
